@@ -173,11 +173,7 @@ void checkBtnAndDelay(int ms)
                 speedCnt();
 
             }
-            
-            Serial.println("btn on");
-            Serial.print("state = ");
-            Serial.println(state);
-            
+
             return;
         }
     }
@@ -192,18 +188,15 @@ void setup()
     Serial.begin(115200);
     pinMode(pinBtn, INPUT);
     digitalWrite(pinBtn, HIGH);
-    Serial.println("hello world");
+    Serial.println("8 square firmware v1.0");
+    Serial.println("by loovee, Apr29, 2014");
+    Serial.println("github.com/loovee/square8");
 }
 
 
 void loop()
 {
-   /* matrix.dispMatrix(big_heart);
-    checkBtnAndDelay(200);
-        
-    matrix.dispMatrix(small_heart);
-    checkBtnAndDelay(delay_time2);*/
-    
+
     if(0 == heartType)
     {
         matrix.dispMatrix(big_heart);

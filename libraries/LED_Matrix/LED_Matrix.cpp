@@ -277,7 +277,7 @@ void LED_Matrix::dispMatrix(uchar *mat)
     }
     else if(DIR_LEFT == dirDisp)            // 1
     {
-        Serial.println("LEFT");
+        // Serial.println("LEFT");
         for(int i=0; i<8; i++)
         {
             for(int j=0; j<8; j++)
@@ -293,7 +293,7 @@ void LED_Matrix::dispMatrix(uchar *mat)
     }
     else if(DIR_RIGHT == dirDisp)           // 2
     {
-        Serial.println("RIGHT");
+        //Serial.println("RIGHT");
         for(int i=0; i<8; i++)
         {
             for(int j=0; j<8; j++)
