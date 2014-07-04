@@ -169,9 +169,27 @@ void LED_Matrix::putIntMatrix(unsigned int *matrix)
     {
         mat[i] = matrix[i]>>8;
     }
-    setDispDta(mat);  
-    if(DIR_DOWN != dirDisp)return ;
-    matrixRev();
+    
+    
+    memset(disp_dta, 0x00, 8);
+    //setDispDta(mat);  
+
+
+    MsTimer2::stop();
+    for(int i=0; i<8; i++)
+    {
+        for(int j=0; j<8; j++)
+        {
+            if(mat[j] & BIT(i))
+            {
+                disp_dta[7-i] += BIT(j);
+            }
+        }
+    }
+    
+    //for(int i=0; i<8; i++)disp_dta[i] = mat[i];
+    MsTimer2::start();
+        
 
 }
 
@@ -186,7 +204,7 @@ void LED_Matrix::dispChar(char c)
 
 void LED_Matrix::dispStringSlide(uchar cycle, int ts, int len_, char *str)
 {
-    if(DIR_NORMAL != dirDisp && DIR_DOWN != dirDisp)return ;
+    //if(DIR_NORMAL != dirDisp && DIR_DOWN != dirDisp)return ;
     
     cmd_get = 0;
     while(1)
@@ -219,6 +237,7 @@ void LED_Matrix::dispStringSlide(uchar cycle, int ts, int len_, char *str)
             
             for(int k=0; k<6; k++)
             {
+
                 putIntMatrix(matrix_i);
                 
                 if(cmd_get)
@@ -235,7 +254,11 @@ void LED_Matrix::dispStringSlide(uchar cycle, int ts, int len_, char *str)
             }
         } 
         
-        if (STR_ONCE == cycle)return;
+        if (STR_ONCE == cycle)
+        {
+            memset(disp_dta, 0x00, 8);
+            return;
+        }
     }
 }
 
@@ -255,8 +278,9 @@ void LED_Matrix::dispMatrix(uchar *mat)
 {
     MsTimer2::stop();
     
-    
     for(int i=0; i<8; i++)disp_dta[i] = 0x00;
+    
+    memset(disp_dta, 0x00, 8);
     
     if(DIR_DOWN == dirDisp)         // 3
     {

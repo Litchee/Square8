@@ -56,13 +56,10 @@ public:
 
     uchar getDirDisp(){return dirDisp;}
     
-    
     void setDirDisp(uchar dir){dirDisp = dir;}
     void setCmdGet(uchar dta){cmd_get = dta;};
     void timer_();
     
-public:
-
     void begin();
     void clear(){memset(disp_dta, 0, 7);}
     void dispStringSlide(uchar cycle, int ts, int len_, char *str);
