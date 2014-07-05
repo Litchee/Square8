@@ -3,9 +3,11 @@
 
   loovee
   2014-3-20
+  
+  update - 2014-7-5 - add dispString function
 
   for more information, please refer to
-  http://www.seeedstudio.com/wiki/index.php?title=Sidekick_Advanced_Kit&uselang=en
+  https://github.com/Litchee/Square8
   
   About the pin connect, refer to http://arduino.cc/en/Tutorial/RowColumnScanning
   
@@ -19,15 +21,11 @@
 
 const int pinBtn = A0;
 
-
 int speed = 0;
-
 
 // 0 for normal
 // 1 for 45 angle
 int heartType = 0;
-
-int dir = DIR_RIGHT;
 
 int delay_time1 = 200;
 int delay_time2 = 1000;
@@ -61,12 +59,12 @@ unsigned char small_heart[8] = {
 unsigned char big_heart_45[8] = 
 {
 0b00000000,
+0b00011110,
+0b00011110,
 0b01111110,
 0b01111110,
 0b01111110,
 0b01111110,
-0b01111000,
-0b01111000,
 0b00000000,
 };
 
@@ -74,26 +72,14 @@ unsigned char small_heart_45[8] =
 {
 0b00000000,
 0b00000000,
+0b00011000,
 0b00111000,
 0b00111000,
-0b00110000,
 0b00000000,
 0b00000000,
 0b00000000,
 
 };
-
-
-
-
-/*
-
-#define DIR_NORMAL      0x00
-#define DIR_LEFT        0x01
-#define DIR_RIGHT       0x02
-#define DIR_DOWN        0x03
-
-*/
 
 void speedCnt()
 {
@@ -109,18 +95,12 @@ void typeCnt()
     
     if(heartType == 1)                  // 45 angle
     {
-        dir = DIR_DOWN;
-        matrix.setDirDisp(dir);
         matrix.dispMatrix(big_heart_45);
     }
     else
     {
-        dir = DIR_RIGHT;
-        matrix.setDirDisp(dir);
         matrix.dispMatrix(big_heart);
     }
-    
-    
 }
 
 
@@ -131,9 +111,11 @@ unsigned char empty[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 int state = 1;
 
+/*
+ * delay ms until the button is pressed
+ */
 void checkBtnAndDelay(int ms)
 {
-    
     for(int i=0; i<ms; i++)
     {
         delay(1);
@@ -183,14 +165,16 @@ long tiemr_tmp = 1;
 
 void setup()
 {
-    matrix.begin();
-    matrix.setDirDisp(dir);
+    matrix.begin(DIR_NORMAL);
     Serial.begin(115200);
     pinMode(pinBtn, INPUT);
     digitalWrite(pinBtn, HIGH);
-    Serial.println("8 square firmware v1.0");
-    Serial.println("by loovee, Apr29, 2014");
+    Serial.println("8 square firmware v2.0");
+    Serial.println("by loovee, Jul 5, 2014");
     Serial.println("github.com/loovee/square8");
+    
+    matrix.dispString(STR_ONCE, 800, "8Square");
+    delay(1000);
 }
 
 
@@ -230,6 +214,4 @@ void loop()
         matrix.dispMatrix(small_heart_45);
     }
     checkBtnAndDelay(80);
-
-    
 }

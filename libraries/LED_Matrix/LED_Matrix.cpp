@@ -28,7 +28,6 @@
 #include "font.h"
 
 /*
-
 1   r5      5
 2   r7      6
 3   c2      7
@@ -45,7 +44,6 @@
 14  r2      2
 15  c7      3
 16  c8      4
-
 */
 
 // 2-dimensional array of row pin numbers:
@@ -80,21 +78,23 @@ void LED_Matrix::timer_()
     matrix.ctrl_bit = matrix.ctrl_bit>7 ? 0 : matrix.ctrl_bit;
 }
 
-void LED_Matrix::begin()
+void LED_Matrix::begin(uchar dir)
 {
     ctrl_bit = 0;
-    cmd_get  = 0;
     dirDisp  = DIR_NORMAL;
 
     clear();
     
     io_init();
     
+    setDir(dir);
+    
 #if _USE_TIMER_
     MsTimer2::set(1, timerIsr); // 500ms period
     MsTimer2::start();
 #endif  
 }
+
 
 void LED_Matrix::setDispDta(uchar *dta)
 {
@@ -162,57 +162,104 @@ void LED_Matrix::getMatrix(uchar *matrix, char asc)
     matrix[7] = 0x00;
 }
 
-void LED_Matrix::putIntMatrix(unsigned int *matrix)
+/*
+ * make the matrix clock
+ */
+void matrix_clock(unsigned char *mat)
 {
-    unsigned char mat[8];
-    for(int i=0; i<8; i++)
-    {
-        mat[i] = matrix[i]>>8;
-    }
+    unsigned char __mat[8];
+    memset(__mat, 0x00, 8);
     
-    
-    memset(disp_dta, 0x00, 8);
-    //setDispDta(mat);  
-
-
-    MsTimer2::stop();
     for(int i=0; i<8; i++)
     {
         for(int j=0; j<8; j++)
         {
             if(mat[j] & BIT(i))
             {
-                disp_dta[7-i] += BIT(j);
+                __mat[7-i] += BIT(j);
             }
         }
     }
-    
-    //for(int i=0; i<8; i++)disp_dta[i] = mat[i];
-    MsTimer2::start();
-        
+    memcpy(mat, __mat, 8);
+}
 
+/*
+ * setDispMatrix
+ */
+void LED_Matrix::setDispMatrix(unsigned char *matrix)
+{
+
+    MsTimer2::stop();                   // stop timer
+    
+    unsigned char mat[8];               // a temp buff
+    memcpy(mat, matrix, 8);             // clear mat
+
+    switch(dirDisp)
+    {
+        case DIR_NORMAL:
+        matrix_clock(mat);
+
+        break;
+        
+        case DIR_LEFT:
+        
+        // do nothing 
+        break;
+        
+        case DIR_RIGHT:
+        matrix_clock(mat);
+        matrix_clock(mat);
+        
+        break;
+        
+        case DIR_DOWN:
+        matrix_clock(mat);
+        matrix_clock(mat);
+        matrix_clock(mat);
+
+        break;
+        
+        default:
+        ;
+    }
+    
+    memcpy(disp_dta, mat, 8);
+    MsTimer2::start();                  // start the timer
 }
 
 void LED_Matrix::dispChar(char c)
 {
-    if(DIR_NORMAL != dirDisp && DIR_DOWN != dirDisp)return ;
-    getMatrix(disp_dta, c);
-    setDispDta(disp_dta);
-    if(DIR_DOWN != dirDisp)return ;
-    matrixRev();
+    unsigned char mat[8];
+    getMatrix(mat, c);
+    setDispMatrix(mat);
 }
 
-void LED_Matrix::dispStringSlide(uchar cycle, int ts, int len_, char *str)
+
+/*
+ * dispString
+ * max 20 char
+ * cycle - STR_ONC - display once
+ *         STR_LOOP - loop display
+ * ts - how many time to display a char, unit on ms
+ * str  - string buff
+ */
+void LED_Matrix::dispString(uchar cycle, int ts, char *str)
 {
-    //if(DIR_NORMAL != dirDisp && DIR_DOWN != dirDisp)return ;
+
+    if(NULL == str)return;
     
-    cmd_get = 0;
+    int __len = 0;
+    
+    for(__len=0; ; __len++)
+    {
+        if(!str[__len])break;
+    }
+    
     while(1)
     {
 
-        int len = len_;
-        
-        if(len > 20)return ;
+        int len = __len;
+        if(len > 20)len = 20;
         
         unsigned char matrix[154];
         unsigned int matrix_i[7];
@@ -237,15 +284,14 @@ void LED_Matrix::dispStringSlide(uchar cycle, int ts, int len_, char *str)
             
             for(int k=0; k<6; k++)
             {
-
-                putIntMatrix(matrix_i);
-                
-                if(cmd_get)
+                unsigned char mat_tp[8];
+                for(int i=0; i<8; i++)
                 {
-                    cmd_get = 0;
-                    return ;
+                    mat_tp[i] = (matrix_i[i]>>8)&0xff;
                 }
-                delay(ts/5);
+                setDispMatrix(mat_tp);
+
+                delay(ts/6);
                 
                 for(int m=0; m<7; m++)
                 {
@@ -274,67 +320,8 @@ void LED_Matrix::matrixRev()
     }
 }
 
-void LED_Matrix::dispMatrix(uchar *mat)
-{
-    MsTimer2::stop();
-    
-    for(int i=0; i<8; i++)disp_dta[i] = 0x00;
-    
-    memset(disp_dta, 0x00, 8);
-    
-    if(DIR_DOWN == dirDisp)         // 3
-    {
-        for(int i=0; i<8; i++)
-        {
-            disp_dta[i] = mat[i];
-        }
-        
-        matrixRev();
-    }
-    
-    else if(DIR_NORMAL == dirDisp)          // 0
-    {
-        for(int i=0; i<8; i++)
-        {
-            disp_dta[i] = mat[i];
-        }
-    }
-    else if(DIR_LEFT == dirDisp)            // 1
-    {
-        // Serial.println("LEFT");
-        for(int i=0; i<8; i++)
-        {
-            for(int j=0; j<8; j++)
-            {
-                if(mat[j] & BIT(i))
-                {
-                    disp_dta[7-i] += BIT(7-j);
-                }
-            }
-        }
-        
-        //matrixRev();
-    }
-    else if(DIR_RIGHT == dirDisp)           // 2
-    {
-        //Serial.println("RIGHT");
-        for(int i=0; i<8; i++)
-        {
-            for(int j=0; j<8; j++)
-            {
-                if(mat[j] & BIT(i))
-                {
-                    disp_dta[7-i] += BIT(j);
-                }
-            }
-        }
-        
-        
-    } 
-    MsTimer2::start();
-}
 
-void LED_Matrix::setPoint(uchar x, uchar y, uchar state)
+void LED_Matrix::disPoint(uchar x, uchar y, uchar state)
 {
 
     if(DIR_DOWN == dirDisp)

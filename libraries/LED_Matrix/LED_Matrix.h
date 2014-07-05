@@ -29,45 +29,48 @@
 
 #define _USE_TIMER_         1           // IF USE TIMER2
 
+
 class LED_Matrix{
 
 private:
 
     uchar disp_dta[8];
     int ctrl_bit;
-    uchar cmd_get;
     uchar dirDisp;
 
 private:
 
-    void putIntMatrix(unsigned int *matrix);
+    void setDispMatrix(unsigned char *matrix);                       // set disp_dta
 
     void matrixRev();
+    
     void setDispDta(uchar *dta);
     void getMatrix(uchar *matrix, char asc);
     
     void io_init();
+    
     void set_n(uchar n, uchar st);
     void set_n(uchar dta);
     void set_p(uchar p, uchar st);
     void set_p(uchar dta);
     
 public:
-
-    uchar getDirDisp(){return dirDisp;}
-    
-    void setDirDisp(uchar dir){dirDisp = dir;}
-    void setCmdGet(uchar dta){cmd_get = dta;};
     void timer_();
     
-    void begin();
-    void clear(){memset(disp_dta, 0, 7);}
-    void dispStringSlide(uchar cycle, int ts, int len_, char *str);
-    void dispChar(char c); 
-    void dispMatrix(uchar *mat);
-    
-    void setPoint(uchar x, uchar y, uchar state);
+// user interface here
+public:
 
+    void begin(uchar dir);
+    void setDir(uchar dir){dirDisp = dir;}                          // set display direction
+    
+    void clear(){memset(disp_dta, 0, 7);}                               // clear display
+    void dispMatrix(unsigned char *mat){setDispMatrix(mat);}                    // display a matrix
+    
+    void disPoint(uchar x, uchar y, uchar state);                       // set a point
+    
+    void dispChar(char c);                                              // display a char
+    void dispString(uchar cycle, int ts, char *str);     // display a string
+    
 };
 
 extern LED_Matrix matrix;
