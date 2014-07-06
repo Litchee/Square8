@@ -1,9 +1,12 @@
 /*
   LED_Matrix.h
-  2013 Copyright (c) Seeed Technology Inc.  All right reserved.
+  2013 Copyright (c) LitChee Lab.  All right reserved.
 
   Author:Loovee
   2013-10-21
+  
+  Update:
+  2014-7-6
  
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
