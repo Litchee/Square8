@@ -5,6 +5,7 @@
   2014-3-20
   
   update - 2014-7-5 - add dispString function
+  update - 2014-7-7 - add wdt
 
   for more information, please refer to
   https://github.com/Litchee/Square8
@@ -18,6 +19,12 @@
 #include <LED_Matrix.h>
 #include <LED_Matrix_dfs.h>
 #include <MsTimer2.h>
+#include <avr/wdt.h>
+
+
+#define wdt_init(X)     wdt_enable(X)
+#define feed()          wdt_reset()
+
 
 const int pinBtn = A0;
 
@@ -116,6 +123,7 @@ int state = 1;
  */
 void checkBtnAndDelay(int ms)
 {
+    feed();
     for(int i=0; i<ms; i++)
     {
         delay(1);
@@ -175,6 +183,10 @@ void setup()
     
     matrix.dispString(STR_ONCE, 800, "8Square");
     delay(1000);
+    
+    wdt_init(WDTO_2S);                      // initialize watch dot, 2s
+    feed();
+
 }
 
 
